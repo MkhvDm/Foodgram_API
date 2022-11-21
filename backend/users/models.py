@@ -15,6 +15,9 @@ class User(AbstractUser):
     first_name = models.CharField('first name', max_length=150, blank=False)
     last_name = models.CharField('last name', max_length=150, blank=False)
 
+    # USERNAME_FIELD = 'username'
+    # REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
+
     # objects = UserManager()
 
     class Meta:
@@ -27,3 +30,24 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+
+class Follow(models.Model):
+    """Модель подписок пользователей друг на друга."""
+
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор',
+        related_name='followers'
+    )
+    follower = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Подписчик',
+        related_name='follows'
+    )
+
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'

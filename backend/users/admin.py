@@ -1,8 +1,12 @@
 from django.contrib import admin, auth
 
-from .models import User
+from django.contrib.auth import get_user_model
+
+from .models import Follow
 
 admin.site.unregister(auth.models.Group)
+
+User = get_user_model()
 
 
 @admin.register(User)
@@ -14,3 +18,14 @@ class UserAdmin(admin.ModelAdmin):
         'last_name',
     )
     search_fields = ('username',)
+
+
+@admin.register(Follow)
+class FollowAdmin(admin.ModelAdmin):
+    list_display = (
+        'author',
+        'follower',
+        # 'author__username',
+        # 'follower___username',
+    )
+    search_fields = ('author', )
