@@ -5,6 +5,50 @@ from django.db import models
 User = get_user_model()
 
 
+class Tag(models.Model):
+    name = models.CharField(
+        max_length=200,
+        verbose_name='Название'
+    )
+    color = models.CharField(
+        max_length=7,
+        verbose_name='Цвет в HEX'
+        # add Hex validator
+    )
+    slug = models.SlugField(
+        max_length=200,
+        unique=True,
+        verbose_name='Короткое имя'
+    )
+
+    class Meta:
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
+
+    def __str__(self):
+        return self.name
+
+
+class Ingredient(models.Model):
+    name = models.CharField(
+        max_length=200,
+        blank=False,
+        verbose_name='Название'
+    )
+    measurement_unit = models.CharField(
+        max_length=200,
+        blank=False,
+        verbose_name='Название'
+    )
+
+    class Meta:
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
+
+    def __str__(self):
+        return self.name
+
+
 class Recipe(models.Model):
     """Модель рецепта."""
     author = models.ForeignKey(
@@ -34,33 +78,47 @@ class Recipe(models.Model):
         verbose_name='Время приготовления, мин'
     )
     tags = models.ManyToManyField(
-        Tags,
+        Tag,
         related_name='recipes',
         verbose_name='Тэги рецепта'
     )
     ingredients = models.ManyToManyField(
-        Ingredients,
+        Ingredient,
         through='RecipeIngredient',
         related_name='recipes',
         verbose_name='Ингредиены рецепта'
     )
 
+    class Meta:
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
+
     def __str__(self):
         return f'"{self.name}" (c){self.author}'
 
 
-class Tag(models.Model):
-    name = models.CharField(
-        max_length=200,
-        verbose_name='Название'
+class RecipeIngredient(models.Model):
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        # related_name ???
     )
-    color = models.CharField(
-        max_length=7,
-        verbose_name='Цвет в HEX'
-        # add Hex validator
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE
+        # related_name ???
     )
-    slug = models.SlugField(
-        max_length=200,
-        unique=True,
-        verbose_name='Короткое имя'
+    amount = models.IntegerField(
+        blank=False,
+        validators=[
+            MinValueValidator(1, 'Минимальное количество - 1.')
+        ],
     )
+
+    class Meta:
+        verbose_name = 'Количество'
+        verbose_name_plural = 'Количество'
+
+
+
+
