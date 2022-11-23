@@ -119,6 +119,40 @@ class RecipeIngredient(models.Model):
         verbose_name = 'Количество'
         verbose_name_plural = 'Количество'
 
+    def __str__(self):
+        return f'{self.recipe}: {self.amount} of {self.ingredient}'
 
 
+class UserRecipes(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE
+    )
 
+    class Meta:
+        verbose_name = 'Рецепт для пользователя'
+        verbose_name_plural = 'Рецепты для пользователя'
+
+
+class FavoriteRecipes(UserRecipes):
+
+    def __str__(self):
+        return f'{self.user} like {self.recipe}'
+
+    class Meta:
+        verbose_name = 'Избранный рецепт пользователя'
+        verbose_name_plural = 'Избранные рецепты пользователя'
+
+
+class ShopList(UserRecipes):
+
+    def __str__(self):
+        return f'{self.user} will cook {self.recipe}'
+
+    class Meta:
+        verbose_name = 'Рецепт для списка покупок пользователя'
+        verbose_name_plural = 'Рецепты для списка покупок пользователя'

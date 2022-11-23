@@ -3,7 +3,7 @@ from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.routers import DefaultRouter
 
 # from .views import CustomUserCreateView, UserApiView
-from backend.api.views import FollowViewSet
+# from api.views import FollowViewSet
 
 router = DefaultRouter()
 # router.register(
