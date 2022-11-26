@@ -25,7 +25,7 @@ class RecipeAdmin(admin.ModelAdmin):
         'name',
         'author',
     )
-    list_filter = ('author', 'name', 'tag', )
+    list_filter = ('author', 'name', 'tags', )
     search_fields = ('text', )
     # TODO: https://www.dothedev.com/blog/django-admin-show-custom-field-list_display/
 

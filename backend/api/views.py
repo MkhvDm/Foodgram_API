@@ -21,19 +21,23 @@ class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = [IsAdmin | IsAuthor | ReadOnly]
+    pagination_class = None  # FIXME TEMP
+
+    # TODO: get_queryset(): ...
 
 
 class TagViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [AllowAny]
+    pagination_class = None
 
 
 class IngredientViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    pagination_class = None
     permission_classes = [AllowAny]
+    pagination_class = None
     filter_backends = (SearchFilter, )
     search_fields = ('^name', )
 

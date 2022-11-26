@@ -5,7 +5,7 @@ from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 
 from users.models import Follow
-from recipes.models import Recipe, Tag, Ingredient
+from recipes.models import Recipe, Tag, Ingredient, RecipeIngredient
 
 
 User = get_user_model()
@@ -36,6 +36,47 @@ class ExtUserSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         return False  # TODO is_subscribed
+
+
+class TagSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Tag
+        fields = '__all__'
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Ingredient
+        fields = '__all__'
+
+
+class AmountIngredientSerializer(serializers.ModelSerializer):
+    amount = serializers.PrimaryKeyRelatedField(
+        queryset=RecipeIngredient.objects.all(), #filter(recipe_id=recipe_id),
+        many=True#,
+        # read_only=True
+    )
+
+    class Meta:
+        model = Ingredient
+        fields = ['id', 'amount']
+
+
+class RecipeSerializer(serializers.ModelSerializer):
+    author = ExtUserSerializer(read_only=True)
+    tags = TagSerializer(many=True, read_only=True)
+    # ingredients = IngredientSerializer(many=True, read_only=True)
+    ingredients = AmountIngredientSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Recipe
+        fields = ['id', 'tags', 'author', 'name', 'text', 'cooking_time',
+                  'ingredients']
+
+
+
 
 
 # class UserWithRecipes(ExtUserSerializer):
@@ -75,25 +116,3 @@ class ExtUserSerializer(serializers.ModelSerializer):
 #         if value == user:
 #             raise serializers.ValidationError('Нельзя подписать на себя!')
 #         return value
-
-
-class RecipeSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Recipe
-        fields = ['author', 'id', 'name', 'text', 'cooking_time',
-                  'tag', 'ingredient']
-
-
-class TagSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Tag
-        fields = '__all__'
-
-
-class IngredientSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Ingredient
-        fields = '__all__'
