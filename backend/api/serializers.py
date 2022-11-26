@@ -5,6 +5,7 @@ from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 
 from users.models import Follow
+from recipes.models import Recipe, Tag, Ingredient
 
 
 User = get_user_model()
@@ -74,3 +75,25 @@ class ExtUserSerializer(serializers.ModelSerializer):
 #         if value == user:
 #             raise serializers.ValidationError('Нельзя подписать на себя!')
 #         return value
+
+
+class RecipeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Recipe
+        fields = ['author', 'id', 'name', 'text', 'cooking_time',
+                  'tag', 'ingredient']
+
+
+class TagSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Tag
+        fields = '__all__'
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Ingredient
+        fields = '__all__'
