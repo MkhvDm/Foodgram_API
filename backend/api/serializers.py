@@ -7,6 +7,8 @@ from rest_framework.validators import UniqueTogetherValidator
 from users.models import Follow
 from recipes.models import Recipe, Tag, Ingredient, RecipeIngredient
 
+from drf_extra_fields.fields import Base64ImageField
+
 
 User = get_user_model()
 
@@ -52,28 +54,73 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class AmountIngredientSerializer(serializers.ModelSerializer):
-    amount = serializers.PrimaryKeyRelatedField(
-        queryset=RecipeIngredient.objects.all(), #filter(recipe_id=recipe_id),
-        many=True#,
-        # read_only=True
-    )
+class RecipeIngredientSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='ingredient.name')
+    measurement_unit = serializers.CharField(source='ingredient.measurement_unit')
 
     class Meta:
-        model = Ingredient
-        fields = ['id', 'amount']
+        model = RecipeIngredient
+        fields = ['id', 'name', 'measurement_unit', 'amount']
+
+    def create(self, validated_data):
+        print('Entry RecipeIngredientSerializer:')
+        print(validated_data)
 
 
 class RecipeSerializer(serializers.ModelSerializer):
     author = ExtUserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
-    # ingredients = IngredientSerializer(many=True, read_only=True)
-    ingredients = AmountIngredientSerializer(many=True, read_only=True)
+    ingredients = RecipeIngredientSerializer(many=True, read_only=True,
+                                             source='recipe_ingredients')
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
+    # image = CustomImageField()
+    image = Base64ImageField()
+    # image = CustomImageField()
 
     class Meta:
         model = Recipe
-        fields = ['id', 'tags', 'author', 'name', 'text', 'cooking_time',
-                  'ingredients']
+        fields = ['id', 'tags', 'author', 'ingredients', 'is_favorited',
+                  'is_in_shopping_cart', 'name', 'image', 'text',
+                  'cooking_time']
+        read_only_fields = ['id', 'author', 'is_favorited',
+                            'is_in_shopping_cart', ]
+
+    def get_is_favorited(self, obj):
+        return False  # TODO is_favorited
+
+    def get_is_in_shopping_cart(self, obj):
+        return False  # TODO is_in_shopping_cart
+
+    def validate(self, attrs):
+        print('ATTRS:')
+        print(attrs)
+
+    def create(self, validated_data):
+        print(validated_data)
+
+
+class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(read_only=True)
+    amount = serializers.IntegerField(min_value=1)
+
+    class Meta:
+        model = RecipeIngredient
+        fields = ['id', 'amount']
+
+    def validate(self, attrs):
+        print(f'ATTRS: {attrs}')
+
+
+class RecipeCreateSerializer(serializers.ModelSerializer):
+    ingredients = RecipeIngredientCreateSerializer(many=True)
+    tags = serializers.PrimaryKeyRelatedField(many=True)
+    # image =
+
+    class Meta:
+        model = Recipe
+        # fields = ['ingredients', 'tags', ]
+        fields = '__all__'
 
 
 

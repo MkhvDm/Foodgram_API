@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'users',
     'recipes',
     'api',
+    # 'drf-extra-fields',
 ]
 
 MIDDLEWARE = [

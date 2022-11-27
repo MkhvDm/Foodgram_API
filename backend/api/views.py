@@ -3,7 +3,7 @@ from rest_framework.filters import SearchFilter
 from rest_framework.generics import CreateAPIView, get_object_or_404
 
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -12,7 +12,8 @@ from recipes.models import Recipe, Tag, Ingredient
 
 # from .serializers import FollowSerializer
 from .permissions import ReadOnly, IsAuthor, IsAdmin
-from .serializers import RecipeSerializer, TagSerializer, IngredientSerializer
+from .serializers import (RecipeSerializer, TagSerializer,
+                          IngredientSerializer, RecipeCreateSerializer)
 
 User = get_user_model()
 
@@ -24,6 +25,14 @@ class RecipeViewSet(ModelViewSet):
     pagination_class = None  # FIXME TEMP
 
     # TODO: get_queryset(): ...
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return RecipeCreateSerializer
+        return RecipeSerializer
 
 
 class TagViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
