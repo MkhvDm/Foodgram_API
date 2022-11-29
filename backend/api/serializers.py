@@ -100,7 +100,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         print(validated_data)
 
 
-class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
+class AddIngredientSerializer(serializers.ModelSerializer):
     # id = serializers.PrimaryKeyRelatedField(read_only=True,
     #                                         source='ingredient')
     # id = serializers.IntegerField()
@@ -124,23 +124,34 @@ class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
-    ingredients = RecipeIngredientCreateSerializer(many=True)
-    # tags = serializers.PrimaryKeyRelatedField(many=True)
-    tags = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    ingredients = AddIngredientSerializer(many=True)
+    tags = serializers.PrimaryKeyRelatedField(many=True,
+                                              queryset=Tag.objects.all())
+    # tags = AddTagsSerializer(many=True)
     # image =
 
     class Meta:
         model = Recipe
-        fields = ['ingredients', 'tags', ]
+        fields = ['ingredients', 'tags', 'name', 'image', 'text',
+                  'cooking_time']
         # fields = '__all__'
 
-    def validate(self, attrs):
-        print(f'attrs: {attrs}')
+    # def validate(self, attrs):
+    #     print(f'attrs: {attrs}')
 
     def create(self, validated_data):
+        print(f'RAW: {self.initial_data}')
+        print(f'DATA: {validated_data}')
         ingredients = validated_data.pop('ingredients')
+        print(f'INGR: {ingredients}')
         tags = validated_data.pop('tags')
+        print(f'TAGS: {tags}')
         # create recipe
+        recipe = Recipe.objects.create(**validated_data)
+        for ingredient in ingredients:
+            # current_achievement, status = (
+            #     RecipeIngredient.objects.get_or_create(**achievement)
+            # )
         # add ingr, tags
         # return recipe
         print(f'Recipe create: {validated_data}')

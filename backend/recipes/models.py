@@ -118,6 +118,10 @@ class RecipeIngredient(models.Model):
     class Meta:
         verbose_name = 'Количество'
         verbose_name_plural = 'Количество'
+        constraints = [
+            models.UniqueConstraint(fields=['recipe', 'ingredient'],
+                                    name='no_doubled_ingredient')
+        ] # todo migrations
 
     def __str__(self):
         return f'{self.recipe}: {self.amount} of {self.ingredient}'
