@@ -100,19 +100,40 @@ class RecipeSerializer(serializers.ModelSerializer):
         print(validated_data)
 
 
+# class RecipeIngredientSerializer(serializers.ModelSerializer):
+#     name = serializers.CharField(source='ingredient.name')
+#     measurement_unit = serializers.CharField(source='ingredient.measurement_unit')
+#
+#     class Meta:
+#         model = RecipeIngredient
+#         fields = ['id', 'name', 'measurement_unit', 'amount']
+#         read_only_fields = ('name', 'measurement_unit')
+
+
 class AddIngredientSerializer(serializers.ModelSerializer):
     # id = serializers.PrimaryKeyRelatedField(read_only=True,
     #                                         source='ingredient')
-    # id = serializers.IntegerField()
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     # id = serializers.PrimaryKeyRelatedField(read_only=True,
     #                                         queryset=Ingredient)
-    # amount = serializers.IntegerField(min_value=1)
 
     def to_representation(self, instance):
         print('-------------')
-        print(instance)
-        print(type(instance))
+        # print(instance)
+        # print(type(instance))
+        what = super()
+        print(f'=  {what}')
+        print(f'=  {what.instance}')
+        print(f'=  {what.fields}')
+        print(f'=  {what.initial_data}')
+        ret = super().to_representation(instance)
+        return ret
+
+    # def to_representation(self, instance):
+    #     """Convert `username` to lowercase."""
+    #     ret = super().to_representation(instance)
+    #     ret['username'] = ret['username'].lower()
+    #     return ret
 
     class Meta:
         model = RecipeIngredient
@@ -131,8 +152,13 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                   'cooking_time']
         # fields = '__all__'
 
-    # def validate(self, attrs):
-    #     print(f'attrs: {attrs}')
+    def to_representation(self, instance):
+        what = super().to_representation(instance)
+        print(f'$  {what}')
+        print(f'$$ {type(what)}')
+
+        print(f'&  {instance}')
+        print(f'&& {instance.recipe_ingredients.all()}')
 
     def create(self, validated_data):
         print(f'init: {self.initial_data}')
