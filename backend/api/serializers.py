@@ -104,31 +104,26 @@ class AddIngredientSerializer(serializers.ModelSerializer):
     # id = serializers.PrimaryKeyRelatedField(read_only=True,
     #                                         source='ingredient')
     # id = serializers.IntegerField()
-    # id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
-    id = serializers.IntegerField(source='ingredient_id')
+    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
+    # id = serializers.PrimaryKeyRelatedField(read_only=True,
+    #                                         queryset=Ingredient)
     # amount = serializers.IntegerField(min_value=1)
+
+    def to_representation(self, instance):
+        print('-------------')
+        print(instance)
+        print(type(instance))
 
     class Meta:
         model = RecipeIngredient
         fields = ['id', 'amount']
-
-    # def validate(self, data):
-    #     print(f'data: {data}')
-    #     print(self.data)
-    #     print(self.context)
-    #     print(self.context.get('request'))
-    #     # return validated_data = ....
-    #
-    # def create(self, validated_data):
-    #     pass
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
     ingredients = AddIngredientSerializer(many=True)
     tags = serializers.PrimaryKeyRelatedField(many=True,
                                               queryset=Tag.objects.all())
-    # tags = AddTagsSerializer(many=True)
-    # image =
+    image = Base64ImageField()
 
     class Meta:
         model = Recipe
@@ -140,21 +135,23 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     #     print(f'attrs: {attrs}')
 
     def create(self, validated_data):
-        print(f'RAW: {self.initial_data}')
-        print(f'DATA: {validated_data}')
+        print(f'init: {self.initial_data}')
+        print(f'valid: {validated_data}')
         ingredients = validated_data.pop('ingredients')
-        print(f'INGR: {ingredients}')
         tags = validated_data.pop('tags')
-        print(f'TAGS: {tags}')
-        # create recipe
         recipe = Recipe.objects.create(**validated_data)
+        recipe.tags.set(tags)
+        list_to_create = []
         for ingredient in ingredients:
-            # current_achievement, status = (
-            #     RecipeIngredient.objects.get_or_create(**achievement)
-            # )
-        # add ingr, tags
-        # return recipe
-        print(f'Recipe create: {validated_data}')
+            list_to_create.append(
+                RecipeIngredient(
+                    recipe=recipe,
+                    ingredient=ingredient.get('id'),
+                    amount=ingredient.get('amount')
+                )
+            )
+        RecipeIngredient.objects.bulk_create(list_to_create)
+        return recipe
 
 
 

@@ -121,7 +121,7 @@ class RecipeIngredient(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['recipe', 'ingredient'],
                                     name='no_doubled_ingredient')
-        ] # todo migrations
+        ]  # todo migrations
 
     def __str__(self):
         return f'{self.recipe}: {self.amount} of {self.ingredient}'
