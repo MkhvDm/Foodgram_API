@@ -62,10 +62,6 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         model = RecipeIngredient
         fields = ['id', 'name', 'measurement_unit', 'amount']
 
-    def create(self, validated_data):
-        print('Entry RecipeIngredientSerializer:')
-        print(validated_data)
-
 
 class RecipeSerializer(serializers.ModelSerializer):
     author = ExtUserSerializer(read_only=True)
@@ -74,9 +70,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                                              source='recipe_ingredients')
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
-    # image = CustomImageField()
     image = Base64ImageField()
-    # image = CustomImageField()
 
     class Meta:
         model = Recipe
@@ -92,48 +86,9 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_in_shopping_cart(self, obj):
         return False  # TODO is_in_shopping_cart
 
-    def validate(self, attrs):
-        print('ATTRS:')
-        print(attrs)
-
-    def create(self, validated_data):
-        print(validated_data)
-
-
-# class RecipeIngredientSerializer(serializers.ModelSerializer):
-#     name = serializers.CharField(source='ingredient.name')
-#     measurement_unit = serializers.CharField(source='ingredient.measurement_unit')
-#
-#     class Meta:
-#         model = RecipeIngredient
-#         fields = ['id', 'name', 'measurement_unit', 'amount']
-#         read_only_fields = ('name', 'measurement_unit')
-
 
 class AddIngredientSerializer(serializers.ModelSerializer):
-    # id = serializers.PrimaryKeyRelatedField(read_only=True,
-    #                                         source='ingredient')
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
-    # id = serializers.PrimaryKeyRelatedField(read_only=True,
-    #                                         queryset=Ingredient)
-
-    def to_representation(self, instance):
-        print('-------------')
-        # print(instance)
-        # print(type(instance))
-        what = super().to_representation(instance)
-        print(f'=  {what}')
-        print(f'=  {what.instance}')
-        print(f'=  {what.fields}')
-        print(f'=  {what.initial_data}')
-        ret = super().to_representation(instance)
-        return ret
-
-    # def to_representation(self, instance):
-    #     """Convert `username` to lowercase."""
-    #     ret = super().to_representation(instance)
-    #     ret['username'] = ret['username'].lower()
-    #     return ret
 
     class Meta:
         model = RecipeIngredient
@@ -142,32 +97,28 @@ class AddIngredientSerializer(serializers.ModelSerializer):
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
     ingredients = AddIngredientSerializer(many=True, write_only=True)
-    tags = serializers.PrimaryKeyRelatedField(many=True,
-                                              queryset=Tag.objects.all())
+    tags = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Tag.objects.all()
+    )
     image = Base64ImageField()
 
     class Meta:
         model = Recipe
         fields = ['ingredients', 'tags', 'name', 'image', 'text',
                   'cooking_time']
-        # fields = '__all__'
 
     def to_representation(self, instance):
-        what = super().to_representation(instance)
-        print(f'$  {what}')
-        print(f'$$ {type(what)}')
-
-        print(f'&  {instance}')
-        print(f'&& {instance.recipe_ingredients.all()}')
-        ingrs = RecipeIngredientSerializer(instance.recipe_ingredients.all(), many=True)
+        ingredients_amount = RecipeIngredientSerializer(
+            instance.recipe_ingredients.all(), many=True
+        )
         tags = TagSerializer(instance.tags.all(), many=True)
-        print(f'#  {tags.data}')
-        what['ingredients'] = ingrs.data
-        what['tags'] = tags.data
-        return what
+        ret = super().to_representation(instance)
+        ret['ingredients'] = ingredients_amount.data
+        ret['tags'] = tags.data
+        return ret
 
     def create(self, validated_data):
-        print(f'init: {self.initial_data}')
         print(f'valid: {validated_data}')
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
@@ -184,6 +135,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             )
         RecipeIngredient.objects.bulk_create(list_to_create)
         return recipe
+
+    def update(self, instance, validated_data):
+        print(f'$ {instance}')
 
 
 
