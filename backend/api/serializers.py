@@ -121,7 +121,7 @@ class AddIngredientSerializer(serializers.ModelSerializer):
         print('-------------')
         # print(instance)
         # print(type(instance))
-        what = super()
+        what = super().to_representation(instance)
         print(f'=  {what}')
         print(f'=  {what.instance}')
         print(f'=  {what.fields}')
@@ -141,7 +141,7 @@ class AddIngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
-    ingredients = AddIngredientSerializer(many=True)
+    ingredients = AddIngredientSerializer(many=True, write_only=True)
     tags = serializers.PrimaryKeyRelatedField(many=True,
                                               queryset=Tag.objects.all())
     image = Base64ImageField()
@@ -159,6 +159,12 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
         print(f'&  {instance}')
         print(f'&& {instance.recipe_ingredients.all()}')
+        ingrs = RecipeIngredientSerializer(instance.recipe_ingredients.all(), many=True)
+        tags = TagSerializer(instance.tags.all(), many=True)
+        print(f'#  {tags.data}')
+        what['ingredients'] = ingrs.data
+        what['tags'] = tags.data
+        return what
 
     def create(self, validated_data):
         print(f'init: {self.initial_data}')
