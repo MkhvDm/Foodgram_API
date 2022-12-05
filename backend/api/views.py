@@ -13,7 +13,8 @@ from recipes.models import Recipe, Tag, Ingredient
 # from .serializers import FollowSerializer
 from .permissions import ReadOnly, IsAuthor, IsAdmin
 from .serializers import (RecipeSerializer, TagSerializer,
-                          IngredientSerializer, RecipeCreateSerializer)
+                          IngredientSerializer, RecipeCreateSerializer,
+                          FollowSerializer)
 
 User = get_user_model()
 
@@ -51,18 +52,17 @@ class IngredientViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     search_fields = ('^name', )
 
 
+class FollowViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
+    """Подписки на авторов."""
+    serializer_class = FollowSerializer
+    permission_classes = (IsAuthenticated, )
+    filter_backends = (SearchFilter, )
+    search_fields = ('follower__username', 'author__username', )
 
-# class FollowViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
-#     """Подписки на авторов."""
-#     serializer_class = FollowSerializer
-#     permission_classes = (IsAuthenticated, )
-    # filter_backends = (SearchFilter, )
-    # search_fields = ('follower__username', 'author__username', )
+    def get_queryset(self):
+        user = self.request.user
+        new_queryset = user.follows.all()
+        return new_queryset
 
-    # def get_queryset(self):
-    #     user = self.request.user
-    #     new_queryset = user.follows.all()
-    #     return new_queryset
-    #
-    # def perform_create(self, serializer):
-    #     serializer.save(user=self.request.user)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

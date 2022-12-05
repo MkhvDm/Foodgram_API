@@ -19,8 +19,15 @@ class TagAdmin(admin.ModelAdmin):
     list_display = ('name', 'color', 'slug', )
 
 
+class RecipeIngredientInline(admin.TabularInline):
+    model = RecipeIngredient
+
+
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
+    inlines = [
+        RecipeIngredientInline,
+    ]
     list_display = (
         'name',
         'author',

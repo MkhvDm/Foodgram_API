@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 # from djoser.serializers import UserSerializer
 from rest_framework.relations import SlugRelatedField
-from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.validators import UniqueTogetherValidator, ValidationError
 
 from users.models import Follow
 from recipes.models import Recipe, Tag, Ingredient, RecipeIngredient
@@ -94,12 +94,25 @@ class AddIngredientSerializer(serializers.ModelSerializer):
         model = RecipeIngredient
         fields = ['id', 'amount']
 
+    def validate(self, attrs):
+        errors = {}
+        for field in self.Meta.fields:
+            # print(f'-- {field}')
+            if field not in attrs:
+                errors[field] = f'Необходимо заполнить поле {field}.'
+            elif not attrs.get(field):
+                errors[field] = f'Необходимо заполнить поле {field}.'
+        if errors:
+            raise ValidationError(errors)
+        return attrs
+
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
-    ingredients = AddIngredientSerializer(many=True, write_only=True)
+    ingredients = AddIngredientSerializer(
+        many=True, write_only=True, required=True
+    )
     tags = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=Tag.objects.all()
+        many=True, queryset=Tag.objects.all(), required=True
     )
     image = Base64ImageField()
 
@@ -119,7 +132,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return ret
 
     def create(self, validated_data):
-        print(f'valid: {validated_data}')
+        # print(f'valid: {validated_data}')
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
@@ -136,12 +149,43 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         RecipeIngredient.objects.bulk_create(list_to_create)
         return recipe
 
+    def validate(self, attrs):
+        # print(f'ATTRS: {attrs}')
+        errors = {}
+        for field in self.Meta.fields:
+            # print(f'-- {field}')
+            if field not in attrs:
+                errors[field] = f'Необходимо заполнить поле {field}.'
+            elif not attrs.get(field):
+                errors[field] = f'Необходимо заполнить поле {field}.'
+        if errors:
+            raise ValidationError(errors)
+        return attrs
+
     def update(self, instance, validated_data):
-        print(f'$ {instance}')
+        print(f'validated_data: {validated_data}')
+        ingredients = instance.recipe_ingredients.all()
+        ingredients.delete()
+        new_ingredients = validated_data.pop('ingredients')
+        list_to_create = []
+        for ingredient in new_ingredients:
+            list_to_create.append(
+                RecipeIngredient(
+                    recipe=instance,
+                    ingredient=ingredient.get('id'),
+                    amount=ingredient.get('amount')
+                )
+            )
+        RecipeIngredient.objects.bulk_create(list_to_create)
 
-
-
-
+        instance.tags.set(validated_data.pop('tags'))
+        instance.image.delete(save=False)
+        instance.image = validated_data.pop('image')
+        instance.name = validated_data.pop('name')
+        instance.text = validated_data.pop('text')
+        instance.cooking_time = validated_data.pop('cooking_time')
+        instance.save()
+        return instance
 
 
 # class UserWithRecipes(ExtUserSerializer):
@@ -151,33 +195,39 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 #         super().fields += 'recipes'
 
 
-# class FollowSerializer(serializers.ModelSerializer):
-#     user = SlugRelatedField(
-#         slug_field='username',
-#         read_only=True,
-#         default=serializers.CurrentUserDefault()
-#     )
-#
-#     following = SlugRelatedField(
-#         slug_field='username',
-#         read_only=False,
-#         queryset=User.objects.all()
-#     )
-#
-#     class Meta:
-#         model = Follow
-#         fields = ('user', 'following', )
-#         validators = [
-#             UniqueTogetherValidator(
-#                 queryset=Follow.objects.all(),
-#                 fields=('user', 'following', ),
-#                 message='Вы уже подписаны на этого пользователя!'
-#             )
-#         ]
-#
-#     def validate_following(self, value):
-#         """Rejects self-following."""
-#         user = self.context.get('request').user
-#         if value == user:
-#             raise serializers.ValidationError('Нельзя подписать на себя!')
-#         return value
+class FollowSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Follow
+        fields = '__all__'
+
+
+    # user = SlugRelatedField(
+    #     slug_field='username',
+    #     read_only=True,
+    #     default=serializers.CurrentUserDefault()
+    # )
+    #
+    # following = SlugRelatedField(
+    #     slug_field='username',
+    #     read_only=False,
+    #     queryset=User.objects.all()
+    # )
+    #
+    # class Meta:
+    #     model = Follow
+    #     fields = ('user', 'following', )
+    #     validators = [
+    #         UniqueTogetherValidator(
+    #             queryset=Follow.objects.all(),
+    #             fields=('user', 'following', ),
+    #             message='Вы уже подписаны на этого пользователя!'
+    #         )
+    #     ]
+    #
+    # def validate_following(self, value):
+    #     """Rejects self-following."""
+    #     user = self.context.get('request').user
+    #     if value == user:
+    #         raise serializers.ValidationError('Нельзя подписать на себя!')
+    #     return value

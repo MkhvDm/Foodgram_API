@@ -4,14 +4,10 @@ from rest_framework.routers import DefaultRouter
 
 # from .views import CustomUserCreateView, UserApiView
 # from api.views import FollowViewSet
-from .views import RecipeViewSet, TagViewSet, IngredientViewSet
+from .views import RecipeViewSet, TagViewSet, IngredientViewSet, FollowViewSet
 
 router = DefaultRouter()
-# router.register(
-#     r'users\/(?P<user_id>\d+)\/subscribe\/',
-#     FollowViewSet,
-#     basename='follows'
-#     )
+router.register(r'users', FollowViewSet, basename='follows')
 router.register('tags', TagViewSet, basename='tags')
 router.register('recipes', RecipeViewSet, basename='recipes')
 router.register('ingredients', IngredientViewSet, basename='ingredients')
