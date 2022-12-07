@@ -102,15 +102,18 @@ class Recipe(models.Model):
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
+        verbose_name='Рецепт',
         on_delete=models.CASCADE,
         related_name='recipe_ingredients'  # ???
     )
     ingredient = models.ForeignKey(
         Ingredient,
+        verbose_name='Игредиент',
         on_delete=models.CASCADE,
         related_name='recipe_ingredients'  #'ingredient'
     )
     amount = models.IntegerField(
+        verbose_name='Количество',
         blank=False,
         validators=[
             MinValueValidator(1, 'Минимальное количество - 1.')
@@ -132,11 +135,13 @@ class RecipeIngredient(models.Model):
 class UserRecipes(models.Model):
     user = models.ForeignKey(
         User,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Пользователь'
     )
     recipe = models.ForeignKey(
         Recipe,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Рецепт'
     )
 
     class Meta:
