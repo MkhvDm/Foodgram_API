@@ -16,9 +16,9 @@ User = get_user_model()
 class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = [
+        fields = (
             'email', 'id', 'username', 'first_name', 'last_name', 'password'
-        ]
+        )
         extra_kwargs = {
             'password': {'write_only': True},
         }
@@ -33,8 +33,8 @@ class ExtUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'id', 'username', 'first_name', 'last_name',
-                  'is_subscribed']
+        fields = ('email', 'id', 'username', 'first_name', 'last_name',
+                  'is_subscribed')
 
     def get_is_subscribed(self, obj):
         return False  # TODO is_subscribed
@@ -60,7 +60,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecipeIngredient
-        fields = ['id', 'name', 'measurement_unit', 'amount']
+        fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -74,11 +74,11 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ['id', 'tags', 'author', 'ingredients', 'is_favorited',
+        fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited',
                   'is_in_shopping_cart', 'name', 'image', 'text',
-                  'cooking_time']
-        read_only_fields = ['id', 'author', 'is_favorited',
-                            'is_in_shopping_cart', ]
+                  'cooking_time')
+        read_only_fields = ('id', 'author', 'is_favorited',
+                            'is_in_shopping_cart', )
 
     def get_is_favorited(self, obj):
         return False  # TODO is_favorited
@@ -92,7 +92,7 @@ class AddIngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecipeIngredient
-        fields = ['id', 'amount']
+        fields = ('id', 'amount')
 
     def validate(self, attrs):
         errors = {}
@@ -118,8 +118,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ['ingredients', 'tags', 'name', 'image', 'text',
-                  'cooking_time']
+        fields = ('ingredients', 'tags', 'name', 'image', 'text',
+                  'cooking_time')
 
     def to_representation(self, instance):
         ingredients_amount = RecipeIngredientSerializer(
@@ -188,18 +188,46 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return instance
 
 
-# class UserWithRecipes(ExtUserSerializer):
-#     recipes = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+# class ExtUserSerializer(serializers.ModelSerializer):
+#     is_subscribed = serializers.SerializerMethodField()
 #
-#     class Meta(ExtUserSerializer.Meta):
-#         super().fields += 'recipes'
+#     class Meta:
+#         model = User
+#         fields = ['email', 'id', 'username', 'first_name', 'last_name',
+#                   'is_subscribed']
+#
+#     def get_is_subscribed(self, obj):
+#         return False  # TODO is_subscribed
+
+
+class ShortRecipes(serializers.ModelSerializer):
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+
+
+class UserWithRecipes(ExtUserSerializer):
+    # recipes = serializers.PrimaryKeyRelatedField(source='author.recipes', many=True, read_only=True)
+    # recipes = ShortRecipes(many=True, source='recipes_set')
+    # recipes = serializers.SerializerMethodField()
+    recipes = ShortRecipes(many=True)
+
+    class Meta(ExtUserSerializer.Meta):
+        fields = ExtUserSerializer.Meta.fields + ('recipes', )
+
+    # def get_recipes(self):
+    #     print(self)
+    #     return {'1': 1, '2': 2, '3': 3}
 
 
 class FollowSerializer(serializers.ModelSerializer):
+    results = ExtUserSerializer(source='author')
 
     class Meta:
         model = Follow
-        fields = '__all__'
+        fields = ('results', )
+        depth = 1
 
 
     # user = SlugRelatedField(
