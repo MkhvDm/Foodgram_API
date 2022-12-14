@@ -208,17 +208,17 @@ class ShortRecipes(serializers.ModelSerializer):
 
 
 class UserWithRecipes(ExtUserSerializer):
-    # recipes = serializers.PrimaryKeyRelatedField(source='author.recipes', many=True, read_only=True)
-    # recipes = ShortRecipes(many=True, source='recipes_set')
-    # recipes = serializers.SerializerMethodField()
-    recipes = ShortRecipes(many=True)
+    recipes = serializers.SerializerMethodField()
+    # recipes = ShortRecipes(many=True)
 
     class Meta(ExtUserSerializer.Meta):
         fields = ExtUserSerializer.Meta.fields + ('recipes', )
 
-    # def get_recipes(self):
-    #     print(self)
-    #     return {'1': 1, '2': 2, '3': 3}
+    def get_recipes(self, obj):
+        print('================')
+        # get query param recipes_limit
+        print(self)
+        return {'1': 1, '2': 2, '3': 3}
 
 
 class FollowSerializer(serializers.ModelSerializer):

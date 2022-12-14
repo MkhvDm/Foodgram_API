@@ -16,11 +16,13 @@ from recipes.models import Recipe, Tag, Ingredient
 from users.models import Follow
 
 # from .serializers import FollowSerializer
+from .pagination import CustomPageNumberPagination
 from .permissions import ReadOnly, IsAuthor, IsAdmin
 from .serializers import (RecipeSerializer, TagSerializer,
                           IngredientSerializer, RecipeCreateSerializer,
                           FollowSerializer, UserWithRecipes)
 
+from djoser.views import UserViewSet
 
 User = get_user_model()
 
@@ -29,7 +31,7 @@ class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = [IsAdmin | IsAuthor | ReadOnly]
-    pagination_class = None  # FIXME TEMP
+    # pagination_class = None  # FIXME TEMP
 
     # TODO: get_queryset(): ...
 
@@ -77,7 +79,32 @@ def subscriptions(request):
 
 class FollowViewSet(GenericViewSet):
     # TODO CHECK
-    pass
+    # serializer_class = UserWithRecipes(many=True)
+    # permission_classes = [IsAuthenticated]
+
+    pagination_class = CustomPageNumberPagination  # todo
+
+    @action(methods=['GET'], detail=False)
+    def subscriptions(self, request):
+        self.serializer_class = UserWithRecipes(many=True)
+        self.permission_classes = [IsAuthenticated]
+        self.pagination_class = CustomPageNumberPagination
+
+        current_user = request.user
+        followings = current_user.follows.values('author')
+        followings_users = User.objects.filter(id__in=followings)
+        followings_users = self.paginate_queryset(followings_users)
+
+        # print(followings_users.query)
+        # print(followings_users)
+        serializer = UserWithRecipes(followings_users, many=True)
+        print(serializer.data)
+        # TODO
+        print(f'----- api_view -----')
+        return self.get_paginated_response(serializer.data)
+        # return Response(serializer.data)
+
+
 
 
 
