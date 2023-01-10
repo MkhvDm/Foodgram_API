@@ -2,7 +2,7 @@ from django.contrib import admin, auth
 
 from django.contrib.auth import get_user_model
 from .models import (Ingredient, Tag, Recipe, RecipeIngredient,
-                     FavoriteRecipes, ShopList)
+                     FavoriteRecipe, ShopRecipe)
 
 User = get_user_model()
 
@@ -43,13 +43,13 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
     list_filter = ('recipe',)
 
 
-@admin.register(FavoriteRecipes)
+@admin.register(FavoriteRecipe)
 class FavoriteRecipesAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe', )
     list_filter = ('user', )
 
 
-@admin.register(ShopList)
+@admin.register(ShopRecipe)
 class ShopListAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe', )
     list_filter = ('user', )

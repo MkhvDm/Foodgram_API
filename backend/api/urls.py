@@ -4,8 +4,7 @@ from rest_framework.routers import DefaultRouter
 
 # from .views import CustomUserCreateView, UserApiView
 # from api.views import FollowViewSet
-from .views import (RecipeViewSet, TagViewSet, IngredientViewSet,
-                    subscriptions, subscribe, FollowViewSet)
+from .views import (RecipeViewSet, TagViewSet, IngredientViewSet, FollowViewSet)
 
 router = DefaultRouter()
 router.register(r'users', FollowViewSet, basename='follows')  # TODO check

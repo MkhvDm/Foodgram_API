@@ -1,3 +1,5 @@
+from django.contrib.auth.models import AnonymousUser
+from django.db import transaction
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 # from djoser.serializers import UserSerializer
@@ -37,7 +39,10 @@ class ExtUserSerializer(serializers.ModelSerializer):
                   'is_subscribed')
 
     def get_is_subscribed(self, obj):
-        return False  # TODO is_subscribed
+        current_user = self.context['request'].user
+        if not current_user.is_authenticated:
+            return False
+        return current_user.follows.filter(author=obj).exists()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -68,8 +73,10 @@ class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     ingredients = RecipeIngredientSerializer(many=True, read_only=True,
                                              source='recipe_ingredients')
-    is_favorited = serializers.SerializerMethodField()
-    is_in_shopping_cart = serializers.SerializerMethodField()
+    # is_favorited = serializers.SerializerMethodField()
+    # is_in_shopping_cart = serializers.SerializerMethodField()
+    is_favorited = serializers.BooleanField(default=False)
+    is_in_shopping_cart = serializers.BooleanField(default=False)
     image = Base64ImageField()
 
     class Meta:
@@ -80,11 +87,11 @@ class RecipeSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'author', 'is_favorited',
                             'is_in_shopping_cart', )
 
-    def get_is_favorited(self, obj):
-        return False  # TODO is_favorited
-
-    def get_is_in_shopping_cart(self, obj):
-        return False  # TODO is_in_shopping_cart
+    # def get_is_favorited(self, obj):
+    #     return False  # TODO is_favorited
+    #
+    # def get_is_in_shopping_cart(self, obj):
+    #     return False  # TODO is_in_shopping_cart
 
 
 class AddIngredientSerializer(serializers.ModelSerializer):
@@ -97,7 +104,6 @@ class AddIngredientSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         errors = {}
         for field in self.Meta.fields:
-            # print(f'-- {field}')
             if field not in attrs:
                 errors[field] = f'Необходимо заполнить поле {field}.'
             elif not attrs.get(field):
@@ -132,7 +138,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return ret
 
     def create(self, validated_data):
-        # print(f'valid: {validated_data}')
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
@@ -150,10 +155,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return recipe
 
     def validate(self, attrs):
-        # print(f'ATTRS: {attrs}')
         errors = {}
         for field in self.Meta.fields:
-            # print(f'-- {field}')
             if field not in attrs:
                 errors[field] = f'Необходимо заполнить поле {field}.'
             elif not attrs.get(field):
@@ -188,18 +191,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return instance
 
 
-# class ExtUserSerializer(serializers.ModelSerializer):
-#     is_subscribed = serializers.SerializerMethodField()
-#
-#     class Meta:
-#         model = User
-#         fields = ['email', 'id', 'username', 'first_name', 'last_name',
-#                   'is_subscribed']
-#
-#     def get_is_subscribed(self, obj):
-#         return False  # TODO is_subscribed
-
-
 class ShortRecipes(serializers.ModelSerializer):
 
     class Meta:
@@ -209,16 +200,22 @@ class ShortRecipes(serializers.ModelSerializer):
 
 class UserWithRecipes(ExtUserSerializer):
     recipes = serializers.SerializerMethodField()
-    # recipes = ShortRecipes(many=True)
+    recipes_count = serializers.IntegerField()
 
     class Meta(ExtUserSerializer.Meta):
-        fields = ExtUserSerializer.Meta.fields + ('recipes', )
+        fields = ExtUserSerializer.Meta.fields + ('recipes', 'recipes_count')
 
     def get_recipes(self, obj):
         print('================')
-        # get query param recipes_limit
-        print(self)
-        return {'1': 1, '2': 2, '3': 3}
+        request = self.context["request"]
+        limit = request.query_params.get('recipes_limit')
+        print(f'Obj: {obj}')
+        recipes = obj.recipes.all()[:int(limit)] if limit else obj.recipes.all()
+
+        print(f'RECIPES: {recipes}')
+        return ShortRecipes(
+            recipes, many=True, context={"request": request}
+        ).data
 
 
 class FollowSerializer(serializers.ModelSerializer):
@@ -228,34 +225,3 @@ class FollowSerializer(serializers.ModelSerializer):
         model = Follow
         fields = ('results', )
         depth = 1
-
-
-    # user = SlugRelatedField(
-    #     slug_field='username',
-    #     read_only=True,
-    #     default=serializers.CurrentUserDefault()
-    # )
-    #
-    # following = SlugRelatedField(
-    #     slug_field='username',
-    #     read_only=False,
-    #     queryset=User.objects.all()
-    # )
-    #
-    # class Meta:
-    #     model = Follow
-    #     fields = ('user', 'following', )
-    #     validators = [
-    #         UniqueTogetherValidator(
-    #             queryset=Follow.objects.all(),
-    #             fields=('user', 'following', ),
-    #             message='Вы уже подписаны на этого пользователя!'
-    #         )
-    #     ]
-    #
-    # def validate_following(self, value):
-    #     """Rejects self-following."""
-    #     user = self.context.get('request').user
-    #     if value == user:
-    #         raise serializers.ValidationError('Нельзя подписать на себя!')
-    #     return value

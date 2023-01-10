@@ -91,10 +91,15 @@ class Recipe(models.Model):
         related_name='recipes',
         verbose_name='Ингредиенты рецепта'
     )
+    pub_date = models.DateTimeField(
+        verbose_name='Дата публикации',
+        auto_now_add=True
+    )
 
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
+        ordering = ['-pub_date']
 
     def __str__(self):
         return f'"{self.name}" (c){self.author}'
@@ -126,46 +131,60 @@ class RecipeIngredient(models.Model):
         verbose_name_plural = 'Количество'
         constraints = [
             models.UniqueConstraint(fields=['recipe', 'ingredient'],
-                                    name='no_doubled_ingredient')
-        ]  # todo migrations
+                                    name='UQ_recipe_ingredient')
+        ]
 
     def __str__(self):
         return f'{self.recipe}: {self.amount} of {self.ingredient}'
 
 
-class UserRecipes(models.Model):
+class UserRecipe(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='Пользователь'
+        verbose_name='Пользователь',
+        related_name="%(class)ss"  # 'favorites' or 'shoplist'
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         verbose_name='Рецепт'
+        # related_name='saved'
     )
 
     class Meta:
         abstract = True
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'recipe'],
+                                    name='UQ_user_recipe')
+        ]
         verbose_name = 'Рецепт для пользователя'
         verbose_name_plural = 'Рецепты для пользователя'
 
 
-class FavoriteRecipes(UserRecipes):
+class FavoriteRecipe(UserRecipe):
 
     def __str__(self):
         return f'{self.user} like {self.recipe}'
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'recipe'],
+                                    name='UQ_favorite_user_recipe')
+        ]
         verbose_name = 'Избранный рецепт пользователя'
         verbose_name_plural = 'Избранные рецепты пользователя'
 
 
-class ShopList(UserRecipes):
+class ShopRecipe(UserRecipe):
 
     def __str__(self):
         return f'{self.user} will cook {self.recipe}'
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'recipe'],
+                                    name='UQ_shoplist_user_recipe')
+        ]
         verbose_name = 'Рецепт для списка покупок пользователя'
         verbose_name_plural = 'Рецепты для списка покупок пользователя'

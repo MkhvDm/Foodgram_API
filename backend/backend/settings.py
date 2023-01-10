@@ -137,7 +137,10 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.CustomPageNumberPagination',
-    'PAGE_SIZE': 1,
+    'PAGE_SIZE': 6,  # TODO: 6
+    # 'DEFAULT_FILTER_BACKENDS': (
+    #     'django_filters.rest_framework.DjangoFilterBackend',
+    # )
 }
 
 
