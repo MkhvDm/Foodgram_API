@@ -1,8 +1,8 @@
-from django.contrib import admin, auth
-
+from django.contrib import admin
 from django.contrib.auth import get_user_model
-from .models import (Ingredient, Tag, Recipe, RecipeIngredient,
-                     FavoriteRecipe, ShopRecipe)
+
+from .models import (FavoriteRecipe, Ingredient, Recipe, RecipeIngredient,
+                     ShopRecipe, Tag)
 
 User = get_user_model()
 
@@ -25,16 +25,13 @@ class RecipeIngredientInline(admin.TabularInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    inlines = [
-        RecipeIngredientInline,
-    ]
-    list_display = (
-        'name',
-        'author',
-    )
-    list_filter = ('author', 'name', 'tags', )
+    inlines = [RecipeIngredientInline, ]
+    list_display = ('name', 'author', 'favorites',)
+    list_filter = ('author', 'name', 'tags',)
     search_fields = ('text', )
-    # TODO: https://www.dothedev.com/blog/django-admin-show-custom-field-list_display/
+
+    def favorites(self, obj):
+        return FavoriteRecipe.objects.filter(recipe=obj).count()
 
 
 @admin.register(RecipeIngredient)

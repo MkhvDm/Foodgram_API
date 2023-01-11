@@ -1,6 +1,8 @@
-from django.core.management.base import BaseCommand
-from recipes.models import Ingredient
 import json
+
+from django.core.management.base import BaseCommand
+
+from recipes.models import Ingredient
 
 ALREADY_LOADED_ERROR_MESSAGE = (
     'Кажется, в базе уже есть ингредиенты...'
@@ -28,4 +30,3 @@ class Command(BaseCommand):
                                            batch_size=10000)
 
         print(SUCCESS_MESSAGE)
-

@@ -6,6 +6,7 @@ User = get_user_model()
 
 
 class Tag(models.Model):
+    """Модель тега для рецептов."""
     name = models.CharField(
         max_length=200,
         verbose_name='Название'
@@ -13,7 +14,6 @@ class Tag(models.Model):
     color = models.CharField(
         max_length=7,
         verbose_name='Цвет в HEX'
-        # add Hex validator
     )
     slug = models.SlugField(
         max_length=200,
@@ -30,6 +30,7 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
+    """Модель ингредиента для рецептов."""
     name = models.CharField(
         max_length=200,
         blank=False,
@@ -102,21 +103,22 @@ class Recipe(models.Model):
         ordering = ['-pub_date']
 
     def __str__(self):
-        return f'"{self.name}" (c){self.author}'
+        return f'"{self.name}" (c) {self.author}'
 
 
 class RecipeIngredient(models.Model):
+    """Модель, связывающая рецепт с ингредиентами и их количеством."""
     recipe = models.ForeignKey(
         Recipe,
         verbose_name='Рецепт',
         on_delete=models.CASCADE,
-        related_name='recipe_ingredients'  # ???
+        related_name='recipe_ingredients'
     )
     ingredient = models.ForeignKey(
         Ingredient,
         verbose_name='Игредиент',
         on_delete=models.CASCADE,
-        related_name='recipe_ingredients'  #'ingredient'
+        related_name='recipe_ingredients'
     )
     amount = models.IntegerField(
         verbose_name='Количество',
@@ -139,17 +141,17 @@ class RecipeIngredient(models.Model):
 
 
 class UserRecipe(models.Model):
+    """Абстрактная модель списка рецептов пользователя."""
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         verbose_name='Пользователь',
-        related_name="%(class)ss"  # 'favorites' or 'shoplist'
+        related_name="%(class)ss"
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         verbose_name='Рецепт'
-        # related_name='saved'
     )
 
     class Meta:
@@ -163,6 +165,7 @@ class UserRecipe(models.Model):
 
 
 class FavoriteRecipe(UserRecipe):
+    """Модель избранного рецепта пользователя."""
 
     def __str__(self):
         return f'{self.user} like {self.recipe}'
@@ -177,6 +180,7 @@ class FavoriteRecipe(UserRecipe):
 
 
 class ShopRecipe(UserRecipe):
+    """Модель рецепта для списка покупок пользователя."""
 
     def __str__(self):
         return f'{self.user} will cook {self.recipe}'

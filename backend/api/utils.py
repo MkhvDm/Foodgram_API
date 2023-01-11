@@ -1,11 +1,10 @@
 import io
-from reportlab.lib.pagesizes import A4, letter
+from datetime import date
 
+from reportlab.lib.pagesizes import letter
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen.canvas import Canvas
-
-from datetime import date
 
 
 def gen_pdf(list_of_strings) -> io.BytesIO:

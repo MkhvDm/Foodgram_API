@@ -1,9 +1,9 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 
 class User(AbstractUser):
-    """Custom user with required fields."""
+    """Custom user с обязательными полями: email, first_name и last_name."""
 
     email = models.EmailField(
         'email',
@@ -14,11 +14,6 @@ class User(AbstractUser):
     )
     first_name = models.CharField('first name', max_length=150, blank=False)
     last_name = models.CharField('last name', max_length=150, blank=False)
-
-    # USERNAME_FIELD = 'username'
-    # REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
-
-    # objects = UserManager()
 
     class Meta:
         verbose_name = 'Пользователь'
