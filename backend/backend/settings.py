@@ -1,11 +1,14 @@
 import os
+from django.core.management.utils import get_random_secret_key
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = '749q*8gy=p53x7yf-m#41&0cm2c4n$6vk*68v))d^kn^)#*z+8'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', default=get_random_secret_key())
 
 DEBUG = True
 
+# CORS_ORIGIN_ALLOW_ALL = True
+# CORS_URLS_REGEX = r"^/api/.*$"
 ALLOWED_HOSTS = ['*', 'localhost']
 
 INSTALLED_APPS = [
@@ -16,6 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
     'rest_framework.authtoken',
     'django_filters',
     'djoser',
@@ -27,6 +31,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

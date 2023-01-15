@@ -38,26 +38,6 @@ class RecipeViewSet(ModelViewSet):
     def get_queryset(self):
         recipes = Recipe.objects.all()
         user = self.request.user
-        filters = []
-        is_fav_filter = self.request.query_params.get('is_favorited')
-        is_shop_filter = self.request.query_params.get('is_in_shopping_cart')
-
-        if is_fav_filter == '1':
-            if not user.is_authenticated:
-                raise PermissionDenied()
-            favs_q = Q(id__in=FavoriteRecipe.objects.filter(
-                user=user).values('recipe'))
-            filters.append(favs_q)
-        if is_shop_filter == '1':
-            if not user.is_authenticated:
-                raise PermissionDenied()
-            print(f'Is shoping cart? - {is_shop_filter}')
-            shop_q = Q(id__in=ShopRecipe.objects.filter(
-                user=user).values('recipe'))
-            filters.append(shop_q)
-
-        if filters:
-            recipes = recipes.filter(*filters)
 
         if user.is_authenticated:
             recipes = recipes.annotate(
