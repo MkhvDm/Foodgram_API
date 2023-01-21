@@ -5,10 +5,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', default=get_random_secret_key())
 
-DEBUG = True
+DEBUG = False
 
-# CORS_ORIGIN_ALLOW_ALL = True
-# CORS_URLS_REGEX = r"^/api/.*$"
 ALLOWED_HOSTS = ['*', 'localhost']
 
 INSTALLED_APPS = [
