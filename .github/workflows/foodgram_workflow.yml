@@ -52,36 +52,39 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/foodgram:latest
 
-#  deploy:
-#    runs-on: ubuntu-latest
-#    needs: build_and_push_to_docker_hub
-#    steps:
-#      - name: executing remote ssh commands to deploy
-#        uses: appleboy/ssh-action@master
-#        with:
-#          host: ${{ secrets.HOST_IP}}
-#          username: ${{ secrets.YCLOUD_USER }}
-#          key: ${{ secrets.SSH_KEY }}
-#          passphrase: ${{ secrets.SSH_PASSPHRASE }}
-#          script: |
-#            sudo docker compose stop
-#            sudo docker compose rm web
-#            sudo rm .env
-#            touch .env
-#            echo DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }} >> .env
-#            echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
-#            echo DB_NAME=${{ secrets.DB_NAME }} >> .env
-#            echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
-#            echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
-#            echo DB_HOST=${{ secrets.DB_HOST }} >> .env
-#            echo DB_PORT=${{ secrets.DB_PORT }} >> .env
-#            sudo cat docker-compose.yaml
-#            sudo cat .env
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build_and_push_to_docker_hub
+    steps:
+      - name: executing remote ssh commands to deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST_IP}}
+          username: ${{ secrets.YCLOUD_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script: |
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram:latest
+            sudo docker compose stop
+            sudo docker compose rm web
+            sudo rm .env
+            touch .env
+            echo DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }} >> .env
+            echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
+            echo DB_NAME=${{ secrets.DB_NAME }} >> .env
+            echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
+            echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+            echo DB_HOST=${{ secrets.DB_HOST }} >> .env
+            echo DB_PORT=${{ secrets.DB_PORT }} >> .env
+            sudo cat docker-compose.yaml
+            sudo cat .env
+            sudo pwd
+            sudp ls -al
 #            sudo docker compose up -d
 
   send_message:
     runs-on: ubuntu-latest
-    needs: build_and_push_to_docker_hub # deploy
+    needs: deploy
     steps:
       - name: send message
         uses: appleboy/telegram-action@master
