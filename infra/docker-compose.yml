@@ -43,4 +43,3 @@ volumes:
   db_vol:
   static_vol:
   media_vol:
-  # front_static:
