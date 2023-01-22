@@ -1,7 +1,6 @@
 import datetime
 
 from django.contrib.auth import get_user_model
-from django.core.exceptions import PermissionDenied
 from django.db.models import BooleanField, Count, ExpressionWrapper, Q, Sum
 from django.http import FileResponse
 from django_filters import rest_framework as filters
