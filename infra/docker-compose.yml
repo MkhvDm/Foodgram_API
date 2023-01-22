@@ -24,7 +24,6 @@ services:
       context: ../frontend
       dockerfile: Dockerfile
     volumes:
-      # - static_vol:/var/html/static/
       - ../frontend/:/app_foodgram/result_build/
 
   nginx:
