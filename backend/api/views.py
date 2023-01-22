@@ -39,7 +39,7 @@ class RecipeViewSet(ModelViewSet):
         user = self.request.user
 
         if user.is_authenticated:
-            return recipes.annotate(
+            recipes = recipes.annotate(
                 is_favorited=ExpressionWrapper(
                     Q(id__in=user.favoriterecipes.all().values('recipe')),
                     output_field=BooleanField()
@@ -49,6 +49,7 @@ class RecipeViewSet(ModelViewSet):
                     output_field=BooleanField()
                 )
             )
+        return recipes
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
