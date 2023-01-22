@@ -78,12 +78,13 @@ jobs:
             echo DB_PORT=${{ secrets.DB_PORT }} >> .env
                     
             sudo rm docker-compose.yml
-            sudo ls -al
             sudo cp ./foodgram-project-react/infra/docker-compose.yml .
             sudo cat docker-compose.yml
             sudo cat .env
+            
+            sudo cd foodgram-project-react/infra
             sudo pwd
-            sudo ls -al
+            
             sudo docker compose up -d
 
   send_message:

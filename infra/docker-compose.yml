@@ -21,10 +21,10 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ../frontend
       dockerfile: Dockerfile
     volumes:
-      - ./frontend/:/app_foodgram/result_build/
+      - ../frontend/:/app_foodgram/result_build/
 
   nginx:
     image: nginx:1.19.3
