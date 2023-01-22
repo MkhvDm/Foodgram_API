@@ -81,7 +81,6 @@ jobs:
             sudo cp ./foodgram-project-react/infra/docker-compose.yml .
             sudo cat docker-compose.yml
             sudo cat .env
-            
             sudo pwd
             
             sudo docker compose up -d
