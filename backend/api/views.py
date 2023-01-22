@@ -39,7 +39,7 @@ class RecipeViewSet(ModelViewSet):
         user = self.request.user
 
         if user.is_authenticated:
-            recipes = recipes.annotate(
+            return recipes.annotate(
                 is_favorited=ExpressionWrapper(
                     Q(id__in=user.favoriterecipes.all().values('recipe')),
                     output_field=BooleanField()
@@ -49,7 +49,6 @@ class RecipeViewSet(ModelViewSet):
                     output_field=BooleanField()
                 )
             )
-        return recipes
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -72,15 +71,14 @@ class RecipeViewSet(ModelViewSet):
             model.objects.create(recipe=recipe, user=request.user)
             serializer = ShortRecipes(recipe, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            if not is_exists:
-                return Response(
-                    {'errors': 'Рецепт не в списке.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            user_recipes = model.objects.filter(user=user, recipe=recipe)
-            user_recipes.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        if not is_exists:
+            return Response(
+                {'errors': 'Рецепт не в списке.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        user_recipes = model.objects.filter(user=user, recipe=recipe)
+        user_recipes.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(methods=['POST', 'DELETE'], detail=True,
             permission_classes=[IsAuthenticated])
