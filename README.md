@@ -86,6 +86,13 @@ sudo docker-compose exec web python manage.py load_ingredients
 Сервис будет доступен на http://<HOST_IP>/.
 
 Текущий адрес: http://51.250.31.8/
+
+Данные для входа в [Админку]:
+```
+username: admin
+email: admin@admin.com
+password: admin_pass
+```
 ### DONE!
 
 ### Авторы
@@ -94,6 +101,7 @@ sudo docker-compose exec web python manage.py load_ingredients
 
 [Telegram]: <https://t.me/MkhvDm>
 [Яндекс.Облаке]: <https://cloud.yandex.ru/>
+[Админку]: http://51.250.31.8/admin/login/?next=/admin/
 
 [Yandex Practicum Team]: https://practicum.yandex.ru/
 [Дмитрий Михеев]: <https://github.com/MkhvDm>
