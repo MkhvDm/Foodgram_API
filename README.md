@@ -39,8 +39,12 @@ python manage.py migrate
 python manage.py createsuperuser
 python manage.py collectstatic --no-input
 ```
+Также необходимо заполнить базу данных ингредиентами и тегами:
+```
+python manage.py load_ingredients
+```
 
-###На удалённом сервере:
+### На удалённом сервере:
 
 Проект подразумевает запуск в [Яндекс.Облаке]. 
 Для успешного деплоя требуется запустить виртуальную машину (ВМ) на сервисе (ubuntu 22.04.1 LTS), 
