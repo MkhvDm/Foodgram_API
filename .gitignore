@@ -132,4 +132,5 @@ dmypy.json
 .idea
 
 local_test_passwords/
+frontend/build_tmp/
 media/
