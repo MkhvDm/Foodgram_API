@@ -23,6 +23,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         return user
 
+
 class ExtUserSerializer(serializers.ModelSerializer):
     """Сериализатор отображения пользователя."""
     is_subscribed = serializers.SerializerMethodField()
